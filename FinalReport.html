@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>1&period; ENEL 592 - Final Project Report</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension ms-toolsai.jupyter */
+/* These classnames are inherited from bootstrap, but are present in most notebook renderers */
+
+.alert {
+    width: auto;
+    padding: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.alert > *:last-child {
+    margin-bottom: 0;
+}
+#preview > .alert:last-child {
+    /* Prevent this being set to zero by the default notebook stylesheet */
+    padding-bottom: 1em;
+}
+
+.alert-success {
+    /* Note there is no suitable color available, so we just copy "info" */
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-info {
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-warning {
+    background-color: var(--theme-warning-background);
+    color: var(--theme-warning-foreground);
+}
+.alert-danger {
+    background-color: var(--theme-error-background);
+    color: var(--theme-error-foreground);
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="1-enel-592---final-project-report">1. ENEL 592 - Final Project Report</h1>
+<h2 id="11-table-of-contents">1.1. Table of Contents</h2>
+<ul>
+<li><a href="#1-enel-592---final-project-report">1. ENEL 592 - Final Project Report</a>
+<ul>
+<li><a href="#11-table-of-contents">1.1. Table of Contents</a></li>
+<li><a href="#12-introduction">1.2. Introduction</a></li>
+<li><a href="#13-system-on-chip-platform">1.3. System-on-Chip Platform</a></li>
+<li><a href="#14-bug-selection">1.4. Bug Selection</a></li>
+<li><a href="#15-insertion-method">1.5. Insertion Method</a></li>
+<li><a href="#16-inserted-bugs">1.6. Inserted Bugs</a>
+<ul>
+<li><a href="#161-bug-1">1.6.1. Bug 1:</a></li>
+</ul>
+</li>
+<li><a href="#17-conclusion">1.7. Conclusion</a></li>
+<li><a href="#18-appendix-a-opentitan">1.8. Appendix A: OpenTitan</a>
+<ul>
+<li><a href="#181-architecture">1.8.1. Architecture</a></li>
+<li><a href="#182-security-features">1.8.2. Security Features</a></li>
+<li><a href="#183-collateral">1.8.3. Collateral</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="12-introduction">1.2. Introduction</h2>
+<p>The aim of my ENEL 592 final project is to insert a set of security bugs into an System-on-Chip (SoC) design, and create associated testbenchs and firmware that demonstrate their implications. This is the culmination of my two previous assignments, where I surveyed hardware security verification and open-source SoC designs. The bugs should be as &quot;realistic&quot; as possible; they should resemble bugs found in-the-wild and be impactful.</p>
+<p>Next semester, I will build on this project and approach the problem from the other side of the coin -- bug detection and/or correction. The resulting SoC will also serve as a good testbench for this future work.</p>
+<h2 id="13-system-on-chip-platform">1.3. System-on-Chip Platform</h2>
+<p>The SoC I will be using for bug injection is the <a href="https://opentitan.org/">OpenTitan SoC</a>, which I detailed in assignment 2. An excerpt of assignment 2 describing the OpenTitan SoC can be found in the appendix A.</p>
+<p>In summary, OpenTitan is ...</p>
+<h2 id="14-bug-selection">1.4. Bug Selection</h2>
+<h2 id="15-insertion-method">1.5. Insertion Method</h2>
+<h2 id="16-inserted-bugs">1.6. Inserted Bugs</h2>
+<h3 id="161-bug-1">1.6.1. Bug 1:</h3>
+<h2 id="17-conclusion">1.7. Conclusion</h2>
+<h2 id="18-appendix-a-opentitan">1.8. Appendix A: OpenTitan</h2>
+<p>The OpenTitan SoC homepage can be found <a href="https://opentitan.org/">here</a>, the documentation <a href="https://docs.opentitan.org/">here</a>, and the GitHub repository containing all source code <a href="https://github.com/lowRISC/opentitan">here</a>. OpenTitan is an open-source Root-of-Trust (RoT) SoC maintained by lowRISC and Google. It is the only open-source RoT currently available, making it an interesting case study for this assignment as it contains extensive security features and documentation. It implements various cryptographic hardware, such as the Advanced Encryption Standard (AES), HMAC, KMAC, and security countermeasures like access control to ensure the Confidentiality, Integrity, and Availability (CIA) of its functions.</p>
+<p><img src="file:///c:\Users\JoeyD\ENEL592-FinalProject\opentitan_features.png" alt="OpenTitan Features"></p>
+<center> Figure 1: OpenTitan Features </center>
+<p>The OpenTitan project has well defined and documented threat models and countermeasures. They outline the secure assets, adversary, attack surfaces, and attack methods. The assets are mainly centered around the cryptopgraphic keys, with other loosely defined statements such as &quot;Integrity and authenticity of stored data&quot;.</p>
+<p>The adversaries they consider are (i) a bad actor with physical access to the device during fabrication or deployment, (ii) a malicious device owner, (iii) malicious users with remote access.</p>
+<h3 id="181-architecture">1.8.1. Architecture</h3>
+<p>The OpenTitan SoC's architecture follows the standard Network-on-Chip (NoC) design paradigm, with various IP cores interconnected a high-speed communication protocol allowing them to communicate with one another. The processor is able to configure and use the pheripherals by writing and reading to memory-mapped IO registers.</p>
+<p>The interconnect responsible for connecting all IP cores is a TileLink Uncached Lightweight (TL-UL) crossbar which is autogenerated using a custom crossbar generation tool. The top-level module dubbed <em>Earl Grey</em>, is also auto-generated using a top generation tool. Both tools are configured by using hjson files that are scattered throughout the project.</p>
+<p><img src="https://docs.opentitan.org/hw/top_earlgrey/doc/top_earlgrey_block_diagram.svg" alt="Earl Grey"></p>
+<center>Figure 2: OpenTitan EarlGrey Top</center> 
+<p>The memories are integrated in the chip with configurable size and address. By default, the instruction ROM is 32 kB, the flash is 1024 kB, and SRAM is 128 kB. The processor core used is the RISC-V Ibex core which we discuss <a href="#ibex">here</a>. As seen in Figure 1, the SoC is seperated into high speed and peripheral domains, with many of its critical functions residing in the high speed domain.</p>
+<!-- TODO: add links to specs -->
+<p>It also provides bebug functionality by way of the RISC-V debug specification 0.13.2 and the JTAG TAP specification.</p>
+<h3 id="182-security-features">1.8.2. Security Features</h3>
+<p>As a RoT, the OpenTitan SoC implements various security features. Outside of its secure cryptopgraphic functions, it also provides a secure boot flow that integrates multiple memory integrity checks, various access control measures such as lock bits for pheripheral configuration registers and memory regions, an integrity scheme integrated into the TL-UL crossbar, and security alerts that are triggered under defined conditions that suggest suspicious behaviour.</p>
+<p>There is curently no detailed documentation for the secure boot flow available, but at a high level, on boot-up the hard-coded instructions in the ROM memory are used for platform checking and memory integrity checking. At this stage, the integrity of the full contents of the non-hard-coded bootloader in the Flash memory is checked by an RSA-check algorithm.</p>
+<p>Another fundamental piece of memory which is not directly mentioned in the secure boot process is the one time programmable (OTP) memory. An OTP controller is provided but the OTP IP (fuse memory) must be source externally. Together, they provide secure one-time-programming functionality that is used throughout the life cycle (LC) of a device. The OTP is broken up in partitions responsible for storing different attributes of the device. The specific attributes for each partition (and the partition themselves) are configurable and will likely vary widely for different applications. Critical data stored in the OTP include the root keys used to derive all other keys for cryptographic functions and memory scrambling.</p>
+<p>The end-to-end cross integrity scheme consists of additional signals embedded into the interconnect that ensures the integrity of data as it travels through the SoC. There is no detailed documentation on its operation yet. From what is available -- the integrity scheme is an extension of the TL-UL specification and consists of 2 additional <code>SystemVerilog buses</code> that carry the &quot;integrity&quot; of the data, which is checked by the consumer. From inspecting the design, the integrity scheme utilizes uses <a href="https://arxiv.org/pdf/0803.1217.pdf">Hsiao code (modified version of Hamming code + parity)</a> as its error-detection code.</p>
+<p>On the cryptographic side, the relevant IPs comprise of the Key Manager, KMAC, HMAC, AES, the Entropy source, EDN, and CSRNG. The <a href="https://docs.opentitan.org/hw/ip/keymgr/doc">key manager</a> is responsible for generating the keys used for all cryptographic operations and identification. On reset, it rejects all software requests until it is initialized again. Initialization consists of first loading in random values from the entropy source then the root key from the OTP. This ensures that the hamming delta (the difference in hamming weights between the random number and the root key) are non-deterministic and the root key is thus not susceptible to power side-channel leakage <strong>(This is my interpretation, I am probably wrong)</strong>. The key manager interatively completes KMAC operations using the KMAC IP to progress to different states and generate different keys. The states transistions of the Key Manager are illustrated in Figure 3. The Key manager implements various security countermeasures such as sparse FSM encoding, and automatic locking of configuration registers during operation.</p>
+<p>The <a href="https://docs.opentitan.org/hw/ip/kmac/doc/">Keccak Message Authentication Code (KMAC) IP core</a> is a Keccak-based message authentication code generator to check the integrity of an incoming message and a signature signed with the same secret key. It implements the <a href="https://csrc.nist.gov/publications/detail/fips/202/final">NIST FIPS 202 SHA-3 standard</a>. The secret key length can vary up to 512 bits. The KMAC generates at most 1600 bits of the digest value at a time which can be read from the STATE memory region. It also implements masked storage and Domain-Oriented Masking (DOM) inside the Keccak function to protect against 1st-order SCA attacks. As mentioned earlier, the KMAC core is used extensively by the key manager. Its security countermeasures include sparse FSM encoding, counter redundancy, and lock bits to ensure configuration registers are not written during operation.</p>
+<p>The <a href="https://docs.opentitan.org/hw/ip/hmac/doc/">Keyed-Hash Message Authentication Code (HMAC) IP Core</a> implements the <a href="https://csrc.nist.gov/publications/detail/fips/180/4/final">SHA256</a> hashing algorithm. It achieves similar functions to the KMAC core but is not hardened against power side-channels. It is meant as a faster alternative to the KMAC core. It does not contain any security countermeasures other than the bus integrity scheme present in all IP.</p>
+<p>The final cryptographic core is the <a href="https://docs.opentitan.org/hw/ip/aes/doc/">AES accelerator</a> responsible for all encryption/decryption operations of the SoC. It implements NIST's <a href="https://www.nist.gov/publications/advanced-encryption-standard-aes">Advanced Encryption Standard</a>. It supports multiple standard block modes of operation (ECB, CBC, CFB, OFB, CTR) and 128/192/256-bit key sizes. The accelerator implements the same masking scheme as the KMAC core to protect itself against 1st order side-channel attacks. It also implements many other security countermeasures: lock bits, clearing of sensitive registers after operation, sparse FSM and control register encoding, and logic rail redundancy for FSMs.</p>
+<p><img src="https://docs.opentitan.org/hw/ip/keymgr/doc/keymgr_functional_model.svg" alt="keymgr"></p>
+<center>Figure 3: Key Manager State Transitions</center>
+<!-- CSRNG, Entropy -->
+<p>Finally, the <a href="https://docs.opentitan.org/hw/ip/rom_ctrl/doc/">ROM</a>, <a href="https://docs.opentitan.org/hw/ip/sram_ctrl/doc/">SRAM</a>, and <a href="https://docs.opentitan.org/hw/ip/flash_ctrl/doc/">Flash</a> controllers manage accesses to memory. They integrate multiple security features.</p>
+<p>The ROM controller contains a startup checker which verify the integrity of its contents by utilizing the KMAC IP to hash all but the 8 top words of its data. The hash received from the KMAC operation is then compared to the 8 top words. The read addresses are passed through a substitution and permutation (S&amp;P) block then passed to the ROM memory and a PRINCE cipher in parallel. The pre-scrambled data read from the ROM is also passed through an S&amp;P block, and XOR from the results of the PRINCE cipher to obtain the final read data.</p>
+<p>The data in the SRAM is also scrambled in similar fashion to the ROM, and additionally contains 7 integrity bits for each 32 bit word. It also provides a Linear Feedback Shift Register (LFSR) block
+to  feature that can overwrite the entire memory with pseudorandom data via a software request.</p>
+<p>The flash controller provides also optional memory scrambling and integrity bits. It also provides up to software-configurable 8 memory regions with configurable access policies.</p>
+<h3 id="183-collateral">1.8.3. Collateral</h3>
+<p>The OpenTitan SoC provides extensive collateral. Collateral in this context, refers to any additional information that describes the functionality of a design and its components. The collateral for this SoC consists of the documentation for all of its IP and contains its security features, interfaces, interactions with software, testplans, and block diagrams. Unique to this SoC are the hjson files that describe all of an IP's parameters, registers, security countermeasures, etc. This is extremely useful to obtain designer context behind the design. For example, from the AES hjson file, we can understand the function of parameter <code>SecMasking</code>, as shown in figure 4.</p>
+<p><img src="file:///c:\Users\JoeyD\ENEL592-FinalProject\aes_192.png" alt="AES SecMasking"></p>
+<center>Figure 4: AES SecMasking .hjson snippet</center>
+<p>Another aspect of collateral is the test environment provided. OpenTitan currently provides automated Dynamic Verification (DV) for all IP which perform simulate the IP and perform automated checks using a Golden Reference model. They also an FPV test suite using SystemVerilog Assertions which mainly verify the compliance to the TL-UL protocol. The SoC was setup locally with relative ease, thanks to the detailed instructions and reliable scripts, and the UVM tests were successful run using Verilator.</p>
+<!-- Abbreviations -->
+<p>*[SoC]: System-on-Chip</p>
+
+        
+        
+    </body>
+    </html>
