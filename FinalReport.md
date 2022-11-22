@@ -6,6 +6,7 @@
   - [1.2. Introduction](#12-introduction)
   - [1.3. System-on-Chip Platform](#13-system-on-chip-platform)
   - [1.4. Bug Selection](#14-bug-selection)
+    - [CWE-1189](#cwe-1189)
   - [1.5. Insertion Method](#15-insertion-method)
   - [1.6. Inserted Bugs](#16-inserted-bugs)
     - [1.6.1. Bug 1:](#161-bug-1)
@@ -18,15 +19,45 @@
 ## 1.2. Introduction
 The aim of my ENEL 592 final project is to insert a set of security bugs into an System-on-Chip (SoC) design, and create associated testbenchs and firmware that demonstrate their implications. This is the culmination of my two previous assignments, where I surveyed hardware security verification and open-source SoC designs. The bugs should be as "realistic" as possible; they should resemble bugs found in-the-wild and be impactful.
 
-Next semester, I will build on this project and approach the problem from the other side of the coin -- bug detection and/or correction. The resulting SoC will also serve as a good testbench for this future work.
+Next semester, I will build on this project and approach the problem from the other side of the coin -- bug detection and/or correction. The resulting SoC will also serve as a good benchmark for this future work.
 
 ## 1.3. System-on-Chip Platform
-The SoC I will be using for bug injection is the [OpenTitan SoC](https://opentitan.org/), which I detailed in assignment 2. An excerpt of assignment 2 describing the OpenTitan SoC can be found in the appendix A.
+The SoC I used for bug injection is the [OpenTitan SoC](https://opentitan.org/), which I detailed in assignment 2. An excerpt of assignment 2 describing the OpenTitan SoC can be found in the [appendix A](#18-appendix-a-opentitan).
 
 In summary, OpenTitan is ...
 
 ## 1.4. Bug Selection
+The inserted bugs should be representative of those found in the wild. They should also be "distributed" and affect different parts of the SoC while still being security-critical. I relied on the [Hardware CWEs](https://cwe.mitre.org/data/definitions/1194.html) to gain inspiration for candidate bugs. The hardware CWEs is a list of common weaknesses found in hardware designs. They are not bugs themselves, but are often found in designs as a result of bugs.
 
+The [2021 CWE Most Important Hardware Weaknesses](https://cwe.mitre.org/scoring/lists/2021_CWE_MIHW.html) contains the most important hardware CWEs of 2021, evaluated using the following criteria:
+1. How frequently is this weakness detected after it has been fielded?
+2. Does the weakness require hardware modifications to mitigate it?
+3. How frequently is this weakness detected during design?
+4. How frequently is this weakness detected during test?
+5. Can the weakness be mitigated once the device has been fielded?
+6. Is physical access required to exploit this weakness?
+7. Can an attack exploiting this weakness be conducted entirely via software?
+8. Is a single exploit against this weakness applicable to a wide range (or family) of devices?
+9. What methodologies do you practice for identifying and preventing both known weaknesses and new weaknesses?
+
+This list is as a valuable starting point because it provides insight into industry and the challenges currently faced. My intuition is that analyzing and implementing bugs that fall within these CWEs should fulfill the desired criteria (realism and impact) and provide the most value for future benchmark uses. 
+
+The list contains 12 CWEs:
+1. CWE-1189: Improper Isolation of Shared Resources on System-on-a-Chip (SoC)
+2. CWE-1191: On-Chip Debug and Test Interface With Improper Access Control
+3. CWE-1231: Improper Prevention of Lock Bit Modification
+4. CWE-1233: Security-Sensitive Hardware Controls with Missing Lock Bit Protection
+5. CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation
+6. CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State
+7. CWE-1256: Improper Restriction of Software Interfaces to Hardware Features
+8. CWE-1260: Improper Handling of Overlap Between Protected Memory Ranges
+9. CWE-1272: Sensitive Information Uncleared Before Debug/Power State Transition
+10. CWE-1274: Improper Access Control for Volatile Memory Containing Boot Code
+11. CWE-1277: Firmware Not Updateable
+12. CWE-1300: Improper Protection of Physical Side Channels
+
+
+### CWE-1189
 
 ## 1.5. Insertion Method
 
@@ -57,7 +88,6 @@ The interconnect responsible for connecting all IP cores is a TileLink Uncached 
 
 The memories are integrated in the chip with configurable size and address. By default, the instruction ROM is 32 kB, the flash is 1024 kB, and SRAM is 128 kB. The processor core used is the RISC-V Ibex core which we discuss [here](#ibex). As seen in Figure 1, the SoC is seperated into high speed and peripheral domains, with many of its critical functions residing in the high speed domain. 
 
-<!-- TODO: add links to specs -->
 It also provides bebug functionality by way of the RISC-V debug specification 0.13.2 and the JTAG TAP specification.
 
 ### 1.8.2. Security Features
