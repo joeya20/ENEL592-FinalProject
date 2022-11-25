@@ -1,7 +1,7 @@
-# 1. ENEL 592 - Final Project Report
+# 1. ENEL 592 - Final Report
 
 ## 1.1. Table of Contents
-- [1. ENEL 592 - Final Project Report](#1-enel-592---final-project-report)
+- [1. ENEL 592 - Final Report](#1-enel-592---final-report)
   - [1.1. Table of Contents](#11-table-of-contents)
   - [1.2. Introduction](#12-introduction)
   - [1.3. System-on-Chip Platform](#13-system-on-chip-platform)
@@ -25,7 +25,7 @@ Next semester, I will build on this project and approach the problem from the ot
 The SoC I used for bug injection is the [OpenTitan SoC](https://opentitan.org/), which I detailed in assignment 2. An excerpt of assignment 2 describing the OpenTitan SoC can be found in the [appendix A](#18-appendix-a-opentitan).
 
 ## 1.4. Bug Selection
-The inserted bugs should be representative of those found in the wild. They should also be "distributed" and affect different parts of the SoC while still being security-critical. I relied on the [Hardware CWEs](https://cwe.mitre.org/data/definitions/1194.html) to gain inspiration for candidate bugs. The hardware CWEs is a list of common weaknesses found in hardware designs. They are not bugs themselves, but are often found in designs as a result of bugs.
+The inserted bugs should be impactful and representative of those found in the wild. They should also be "distributed" and affect different parts of the SoC while still being security-critical. I relied on the [Hardware CWEs](https://cwe.mitre.org/data/definitions/1194.html) to gain inspiration for candidate bugs. The hardware CWEs is a list of common weaknesses found in hardware designs. They are not bugs themselves, but are often found in designs as a result of bugs.
 
 The [2021 CWE Most Important Hardware Weaknesses](https://cwe.mitre.org/scoring/lists/2021_CWE_MIHW.html) contains the most important hardware CWEs of 2021, evaluated using the following criteria:
 1. How frequently is this weakness detected after it has been fielded?
@@ -54,39 +54,61 @@ The list contains 12 CWEs:
 11. CWE-1277: Firmware Not Updateable
 12. CWE-1300: Improper Protection of Physical Side Channels
 
-Most of these 12 CWEs are all applicable to bug insertion at the RTL. Some, such as CWE-1277: Firmware Not Updateable, occur at the architecture and design stages as noted on its page, and is thus not a good fit for my purpose. Others do not appear applicable at first glance, but they are fairly open to intepretation because they are so generic. For example, CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation mainly mentions the use of "weak" cryptographic primitives (e.g., weak algorithms like MD5), but this can also be understood as the incorrect implementation of a strong algorithm. The latter is suitable for this project as it theoretically requires minimal modification to the original design while still having high impact. 
+All of these 12 CWEs are all applicable to bug insertion at the RTL. They can all get introduced during the implementation phase, as noted on their CWE pages, which is the development phase I am focusing on. Some do not appear applicable at first glance, but are fairly open to intepretation because they are so generic. For example, CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation mainly mentions the use of "weak" cryptographic primitives (e.g., weak algorithms like MD5), but this can also be understood as the incorrect implementation of a strong algorithm. The latter may be suitable for this project depending on how much modifification to the original design is required.
 
-I further classified them by CWE Category, the highest level of the CWE hierarchy. Again, the goal is to develop a distributed set of bugs and classifying them by category will allow me to gain the most functional variety.
+To narrow down the list of CWEs to implement, I further classified them by CWE Category, the highest level of the CWE hierarchy. Again, the goal is to develop a distributed set of bugs and classifying them by category will allow me to gain the most functional variety. The CWE categories and their summaries were obtained from the [CWE list](https://cwe.mitre.org/data/definitions/1194.html). 
 
-**CWE-1196: Security Flow Issues**
-- CWE-1274: Improper Access Control for Volatile Memory Containing Boot Code  
+**CWE-1196 - Security Flow Issues:** weaknesses in this category are related to improper design of full-system security flows, including but not limited to secure boot, secure update, and hardware-device attestation.
 
-**CWE-1198: Privilege Separation and Access Control Issues**
+- CWE-1274: Improper Access Control for Volatile Memory Containing Boot Code
+
+**CWE-1198 - Privilege Separation and Access Control Issues:** weaknesses in this category are related to features and mechanisms providing hardware-based isolation and access control (e.g., identity, policy, locking control) of sensitive shared hardware resources such as registers and fuses.
+
 - CWE-1189: Improper Isolation of Shared Resources on System-on-a-Chip (SoC)
 - CWE-1260: Improper Handling of Overlap Between Protected Memory Ranges
 
-**CWE-1199: General Circuit and Logic Design Concerns**
+**CWE-1199 - General Circuit and Logic Design Concerns:** weaknesses in this category are related to hardware-circuit design and logic (e.g., CMOS transistors, finite state machines, and registers) as well as issues related to hardware description languages such as System Verilog and VHDL.
+
 - CWE-1231: Improper Prevention of Lock Bit Modification
 - CWE-1233: Security-Sensitive Hardware Controls with Missing Lock Bit Protection
 
-**CWE-1205: Security Primitives and Cryptography Issues**
+**CWE-1205 - Security Primitives and Cryptography Issues:** weaknesses in this category are related to hardware implementations of cryptographic protocols and other hardware-security primitives such as physical unclonable functions (PUFs) and random number generators (RNGs).
+
 - CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation
 
-**CWE-1206: Power, Clock, Thermal, and Reset Concerns**
+**CWE-1206 - Power, Clock, Thermal, and Reset Concerns:** weaknesses in this category are related to system power, voltage, current, temperature, clocks, system state saving/restoring, and resets at the platform and SoC level.
+
 - CWE-1256: Improper Restriction of Software Interfaces to Hardware Features
 
-**CWE-1207: Debug and Test Problems**
+**CWE-1207 - Debug and Test Problems:** weaknesses in this category are related to hardware debug and test interfaces such as JTAG and scan chain.
+
 - CWE-1191: On-Chip Debug and Test Interface With Improper Access Control
 - CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State
 - CWE-1272: Sensitive Information Uncleared Before Debug/Power State Transition
 
-**CWE-1208: Cross-Cutting Problems**
+**CWE-1208 - Cross-Cutting Problems:** weaknesses in this category can arise in multiple areas of hardware design or can apply to a wide cross-section of components.
+
 - CWE-1277: Firmware Not Updateable
 
-**CWE-1388: Physical Access Issues and Concerns**
+**CWE-1388 - Physical Access Issues and Concerns:** weaknesses in this category are related to concerns of physical access.
 - CWE-1300: Improper Protection of Physical Side Channels
 
-From these categorized CWEs, I chose CWE-, . I will continue this section by analyzing these CWEs in detail. 
+For each category, I chose a representative CWE that I believe will require the most minimal amount of modification to the design to demonstrate how easily they can introduced and to make them as "stealthy" as possible, theoretically making them more challenging to detect. Then, I filtered it down to a final set of 5 CWEs to implement. The criteria for this filter was simply personal interest. 
+
+The final set of CWEs I chose consists of:
+1. CWE-1191: On-Chip Debug and Test Interface With Improper Access Control/CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State
+2. CWE-1231: Improper Prevention of Lock Bit Modification/CWE-1233: Security-Sensitive Hardware Controls with Missing Lock Bit Protection
+3. CWE-1260: Improper Handling of Overlap Between Protected Memory Ranges
+4. CWE-1272: Sensitive Information Uncleared Before Debug/Power State Transition
+5. CWE-1277: Firmware Not Updateable
+
+Even though I am interested in side-channel and cryptographic weaknesses, I ultimately chose to forgo them because developing exploits for these weaknesses are involved tasks. They both typically require many inputs to statistically piece together secure information but this would be cumbersome to demonstrate in a testbench setting. They are also generally harder to introduce through the small implementation bugs that I will be doing here. 
+
+I also decided to implement two of the three weaknesses in the CWE-1207 - Debug and Test Problems category because I believe that they touch fundamentally different aspects of debug and test behaviour. CWE-1191: On-Chip Debug and Test Interface With Improper Access Control/CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State is related to the access that the Debug and Test Interface provides and protecting secure data through appropriate access control mechanisms while the other is related to the pre/post debug clean-up. 
+
+I will continue this section by analyzing these CWEs in detail. I will discuss how we can generally characterize these CWEs such as where they can occur and how bugs *may* manifest in hardware designs to introduce these weaknesses. It is important to mention that I am not trying to develop a definitive set of bugs for any CWE, rather I am attempting to demonstrate how a bug can introduce a CWE. 
+
+The characteristics under consideration are the stages of the development lifecycle they can be addressed and introduced, functional locations where they can get introduced, the sequence of logical operations involved, and some root causes of bugs that can result in CWEs. These characteristics were chosen because they give meaningful insight into the bug insertion process and provide a formalized way to introduce bugs. 
 
 ### CWE-1189
 
