@@ -54,9 +54,9 @@ The list contains 12 CWEs:
 11. CWE-1277: Firmware Not Updateable
 12. CWE-1300: Improper Protection of Physical Side Channels
 
-These 12 CWEs are all applicable to bug insertion at the RTL. Because they are so generic, they are fairly open to intepretation. For example, CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation mainly mentions the use of "weak" cryptographic primitives (e.g., weak algorithms like MD5), but this can also be understood as the incorrect implementation of a strong algorithm. The latter is suitable for this project as it theoretically requires minimal modification to the original design while still having high impact. 
+Most of these 12 CWEs are all applicable to bug insertion at the RTL. Some, such as CWE-1277: Firmware Not Updateable, occur at the architecture and design stages as noted on its page, and is thus not a good fit for my purpose. Others do not appear applicable at first glance, but they are fairly open to intepretation because they are so generic. For example, CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation mainly mentions the use of "weak" cryptographic primitives (e.g., weak algorithms like MD5), but this can also be understood as the incorrect implementation of a strong algorithm. The latter is suitable for this project as it theoretically requires minimal modification to the original design while still having high impact. 
 
-From the 12 most important CWES, I classify them by CWE Category, the highest level of the CWE hierarchy. Again, the goal is to develop a distributed set of bugs and classifying them by category will allow me to gain the most variety.
+I further classified them by CWE Category, the highest level of the CWE hierarchy. Again, the goal is to develop a distributed set of bugs and classifying them by category will allow me to gain the most functional variety.
 
 **CWE-1196: Security Flow Issues**
 - CWE-1274: Improper Access Control for Volatile Memory Containing Boot Code  
@@ -86,6 +86,7 @@ From the 12 most important CWES, I classify them by CWE Category, the highest le
 **CWE-1388: Physical Access Issues and Concerns**
 - CWE-1300: Improper Protection of Physical Side Channels
 
+From these categorized CWEs, I chose CWE-, . I will continue this section by analyzing these CWEs in detail. 
 
 ### CWE-1189
 
