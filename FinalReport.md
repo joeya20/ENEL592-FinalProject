@@ -24,8 +24,6 @@ Next semester, I will build on this project and approach the problem from the ot
 ## 1.3. System-on-Chip Platform
 The SoC I used for bug injection is the [OpenTitan SoC](https://opentitan.org/), which I detailed in assignment 2. An excerpt of assignment 2 describing the OpenTitan SoC can be found in the [appendix A](#18-appendix-a-opentitan).
 
-In summary, OpenTitan is ...
-
 ## 1.4. Bug Selection
 The inserted bugs should be representative of those found in the wild. They should also be "distributed" and affect different parts of the SoC while still being security-critical. I relied on the [Hardware CWEs](https://cwe.mitre.org/data/definitions/1194.html) to gain inspiration for candidate bugs. The hardware CWEs is a list of common weaknesses found in hardware designs. They are not bugs themselves, but are often found in designs as a result of bugs.
 
@@ -55,6 +53,38 @@ The list contains 12 CWEs:
 10. CWE-1274: Improper Access Control for Volatile Memory Containing Boot Code
 11. CWE-1277: Firmware Not Updateable
 12. CWE-1300: Improper Protection of Physical Side Channels
+
+These 12 CWEs are all applicable to bug insertion at the RTL. Because they are so generic, they are fairly open to intepretation. For example, CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation mainly mentions the use of "weak" cryptographic primitives (e.g., weak algorithms like MD5), but this can also be understood as the incorrect implementation of a strong algorithm. The latter is suitable for this project as it theoretically requires minimal modification to the original design while still having high impact. 
+
+From the 12 most important CWES, I classify them by CWE Category, the highest level of the CWE hierarchy. Again, the goal is to develop a distributed set of bugs and classifying them by category will allow me to gain the most variety.
+
+**CWE-1196: Security Flow Issues**
+- CWE-1274: Improper Access Control for Volatile Memory Containing Boot Code  
+
+**CWE-1198: Privilege Separation and Access Control Issues**
+- CWE-1189: Improper Isolation of Shared Resources on System-on-a-Chip (SoC)
+- CWE-1260: Improper Handling of Overlap Between Protected Memory Ranges
+
+**CWE-1199: General Circuit and Logic Design Concerns**
+- CWE-1231: Improper Prevention of Lock Bit Modification
+- CWE-1233: Security-Sensitive Hardware Controls with Missing Lock Bit Protection
+
+**CWE-1205: Security Primitives and Cryptography Issues**
+- CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation
+
+**CWE-1206: Power, Clock, Thermal, and Reset Concerns**
+- CWE-1256: Improper Restriction of Software Interfaces to Hardware Features
+
+**CWE-1207: Debug and Test Problems**
+- CWE-1191: On-Chip Debug and Test Interface With Improper Access Control
+- CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State
+- CWE-1272: Sensitive Information Uncleared Before Debug/Power State Transition
+
+**CWE-1208: Cross-Cutting Problems**
+- CWE-1277: Firmware Not Updateable
+
+**CWE-1388: Physical Access Issues and Concerns**
+- CWE-1300: Improper Protection of Physical Side Channels
 
 
 ### CWE-1189
