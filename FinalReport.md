@@ -6,15 +6,22 @@
   - [1.2. Introduction](#12-introduction)
   - [1.3. System-on-Chip Platform](#13-system-on-chip-platform)
   - [1.4. Bug Selection](#14-bug-selection)
-    - [CWE-1189](#cwe-1189)
-  - [1.5. Insertion Method](#15-insertion-method)
-  - [1.6. Inserted Bugs](#16-inserted-bugs)
-    - [1.6.1. Bug 1:](#161-bug-1)
-  - [1.7. Conclusion](#17-conclusion)
-  - [1.8. Appendix A: OpenTitan](#18-appendix-a-opentitan)
-    - [1.8.1. Architecture](#181-architecture)
-    - [1.8.2. Security Features](#182-security-features)
-    - [1.8.3. Collateral](#183-collateral)
+    - [1.4.1. CWE-1231 / CWE-1233](#141-cwe-1231--cwe-1233)
+    - [1.4.2. CWE-1244](#142-cwe-1244)
+    - [1.4.3. CWE-1260](#143-cwe-1260)
+    - [1.4.4. CWE-1272](#144-cwe-1272)
+    - [1.4.5. CWE-1277](#145-cwe-1277)
+  - [1.5. Bug Insertion](#15-bug-insertion)
+    - [1.5.1. Bug 1:](#151-bug-1)
+    - [1.5.2. Bug 2:](#152-bug-2)
+    - [1.5.3. Bug 3:](#153-bug-3)
+    - [1.5.4. Bug 4:](#154-bug-4)
+    - [1.5.5. Bug 5:](#155-bug-5)
+  - [1.6. Conclusion](#16-conclusion)
+  - [1.7. Appendix A: OpenTitan](#17-appendix-a-opentitan)
+    - [1.7.1. Architecture](#171-architecture)
+    - [1.7.2. Security Features](#172-security-features)
+    - [1.7.3. Collateral](#173-collateral)
 
 ## 1.2. Introduction
 The aim of my ENEL 592 final project is to insert a set of security bugs into an System-on-Chip (SoC) design, and create associated testbenchs and firmware that demonstrate their implications. This is the culmination of my two previous assignments, where I surveyed hardware security verification and open-source SoC designs. The bugs should be as "realistic" as possible; they should resemble bugs found in-the-wild and be impactful.
@@ -96,31 +103,50 @@ To narrow down the list of CWEs to implement, I further classified them by CWE C
 For each category, I chose a representative CWE that I believe will require the most minimal amount of modification to the design to demonstrate how easily they can introduced and to make them as "stealthy" as possible, theoretically making them more challenging to detect. Then, I filtered it down to a final set of 5 CWEs to implement. The criteria for this filter was simply personal interest. 
 
 The final set of CWEs I chose consists of:
-1. CWE-1191: On-Chip Debug and Test Interface With Improper Access Control/CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State
-2. CWE-1231: Improper Prevention of Lock Bit Modification/CWE-1233: Security-Sensitive Hardware Controls with Missing Lock Bit Protection
+1. CWE-1231: Improper Prevention of Lock Bit Modification/CWE-1233: Security-Sensitive Hardware Controls with Missing Lock Bit Protection
+2. CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State
 3. CWE-1260: Improper Handling of Overlap Between Protected Memory Ranges
 4. CWE-1272: Sensitive Information Uncleared Before Debug/Power State Transition
 5. CWE-1277: Firmware Not Updateable
 
 Even though I am interested in side-channel and cryptographic weaknesses, I ultimately chose to forgo them because developing exploits for these weaknesses are involved tasks. They both typically require many inputs to statistically piece together secure information but this would be cumbersome to demonstrate in a testbench setting. They are also generally harder to introduce through the small implementation bugs that I will be doing here. 
 
-I also decided to implement two of the three weaknesses in the CWE-1207 - Debug and Test Problems category because I believe that they touch fundamentally different aspects of debug and test behaviour. CWE-1191: On-Chip Debug and Test Interface With Improper Access Control/CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State is related to the access that the Debug and Test Interface provides and protecting secure data through appropriate access control mechanisms while the other is related to the pre/post debug clean-up. 
+I also decided to implement two of the three weaknesses in the CWE-1207 - Debug and Test Problems category because I believe that they touch fundamentally different aspects of debug and test behaviour. CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State is related to the access that the Debug and Test Interface provides and protecting secure data through appropriate access control mechanisms while the other is related to the pre/post debug clean-up. 
 
 I will continue this section by analyzing these CWEs in detail. I will discuss how we can generally characterize these CWEs such as where they can occur and how bugs *may* manifest in hardware designs to introduce these weaknesses. It is important to mention that I am not trying to develop a definitive set of bugs for any CWE, rather I am attempting to demonstrate how a bug can introduce a CWE. 
 
-The characteristics under consideration are the stages of the development lifecycle they can be addressed and introduced, functional locations where they can get introduced, the sequence of logical operations involved, and some root causes of bugs that can result in CWEs. These characteristics were chosen because they give meaningful insight into the bug insertion process and provide a formalized way to introduce bugs. 
+Since I am operating at the RTL implementation stage, the characteristics under consideration are the functional locations (both inter-and-intra-modular) where they can get introduced, the sequence of logical operations involved, and errors in these logical operations that result in CWEs. These characteristics were chosen because they give meaningful insight into the bug insertion process and provide a formalized way to introduce bugs. The characteristics of possible bugs such as the # of lines modified will be discussed in a [later section](#16-inserted-bugs).
 
-### CWE-1189
+### 1.4.1. CWE-1231 / CWE-1233
 
-## 1.5. Insertion Method
+### 1.4.2. CWE-1244
+ Hardware designs contain debug infrastructure meant to assist in post-silicon validation and quality-control. This debug infrastructure typically consists of an access port (e.g., JTAG) and a scan chain that allows for easy shift in and out of registers. This is the closest to "white-box" access possible post-silicon and can expose secure assets if not designed properly. There is a rich body of literature available exploring this topic but at the very least, it is not "standard" knowledge that debug ports must be protected. CWE-1244 is related to this debug port protection and can be considered the "next step" of CWE-1191. Where CWE-1191 is the lack of debug access control mechanisms to protect assets, CWE-1244 is the improper use of available access control. The example present on its page delivers the "intent" behind this CWE quite well. Consider a scenario where an attacker has physical access to a device and JTAG port. There is an access control bit that enables and disables the JTAG debugger, `JTAG_SHIELD`. However this bit is not set on boot-up, instead, it is set when control is transferred over to user-level software. This leaves the system vulnerable during the boot-up period, when `JTAG_SHIELD` is in some unknown state, and may allow the attacker to read or write secure assets. For example, they could modify the instructions in memory to modify the boot flow. From this, we can intuitively understand not only this specific scenario, but the CWE in general. 
 
-## 1.6. Inserted Bugs
+This CWE can manifest in any IP block which stores or uses control and status registers related to debug access control. While this is likely to be in debug-related modules it is not necessarily the case. For example, consider the code snippet from the Hack@DAC 2021 OpenPiton SoC shown in Figure 1. This snippet was taken from the top-level of an AES accelerator. We can deduce that `debug_mode_i` is a debug-related access control signal that denies read access to the keys when in debug mode. However, one of the keys in not protected -- a security bug that can lead to the leakage of that key. I consider this to be part of this CWE because there is an access control mechanism in place, it was just used incorrectly. The point is that debug-related bugs do not always appear in debug-related modules (although it does a great job of illustrating that one CWE can manifest in many different ways when considered with the previous scenario). This specific CWE, however, **can only appear in modules where there is a debug access control signal**. This is a key intuition that can guide both its insertion for this project and any future detection/correction work. 
 
-### 1.6.1. Bug 1: 
+![Hack@DAC 2021 Debug Access Control Bug](images/h@d21_debug.jpg)
+Figure 1: Hack@DAC 2021 Debug AES Keys Access Control Bug
 
-## 1.7. Conclusion
+The sequence of logical operations involved for this CWE are relatively simple, as it must all be related to reads/writes to the aforementioned debug access control signal. The challenging part is determining all appropriate time where these operations (read/write) must happen. In cases where (if?) there are multiple debug access levels, the value being read/written is also important. The first scenario I discussed presented a situation where access control was written too late, the second scenario presented a situation where it was not read when it should have been. It follows that any modification to these reads or writes could introduce this CWE. Considering the two scenarios again, this could mean removing the reset value of the register storing the bit and removing an access control check (as is shown in the snippet), respectively. 
 
-## 1.8. Appendix A: OpenTitan
+### 1.4.3. CWE-1260
+Memory in computer systems is organized into ranges that are controlled by software and enforced by a Memory Management Unit (MMU) or a Memory Protection Unit (MPU). There are also physical memory regions enforced by the Physical Memory Management (PMP) unit, meant to separate physical memory space for each hardware thread (or *hart*). For example, the [RISC-V privileged specification](https://github.com/riscv/riscv-isa-manual/releases/download/Priv-v1.12/riscv-privileged-20211203.pdf) contains a PMP implementation. The software-controlled address ranges are typically software-configurable to allow for dynamic change during operation. CWE-1260 is related to the overlapping of these memory ranges. While overlapping memory regions is typically allowed, it can introduce risks if memory ranges with different privilege levels are overlapping and the MMU/MPU is not designed to handle these overlaps well. The 
+
+### 1.4.4. CWE-1272
+
+### 1.4.5. CWE-1277
+
+## 1.5. Bug Insertion 
+
+### 1.5.1. Bug 1: 
+### 1.5.2. Bug 2: 
+### 1.5.3. Bug 3: 
+### 1.5.4. Bug 4: 
+### 1.5.5. Bug 5: 
+
+## 1.6. Conclusion
+
+## 1.7. Appendix A: OpenTitan
 The OpenTitan SoC homepage can be found [here](https://opentitan.org/), the documentation [here](https://docs.opentitan.org/), and the GitHub repository containing all source code [here](https://github.com/lowRISC/opentitan). OpenTitan is an open-source Root-of-Trust (RoT) SoC maintained by lowRISC and Google. It is the only open-source RoT currently available, making it an interesting case study for this assignment as it contains extensive security features and documentation. It implements various cryptographic hardware, such as the Advanced Encryption Standard (AES), HMAC, KMAC, and security countermeasures like access control to ensure the Confidentiality, Integrity, and Availability (CIA) of its functions. 
 
 ![OpenTitan Features](images/opentitan_features.png)
@@ -130,7 +156,7 @@ The OpenTitan project has well defined and documented threat models and counterm
 
 The adversaries they consider are (i) a bad actor with physical access to the device during fabrication or deployment, (ii) a malicious device owner, (iii) malicious users with remote access. 
 
-### 1.8.1. Architecture
+### 1.7.1. Architecture
 
 The OpenTitan SoC's architecture follows the standard Network-on-Chip (NoC) design paradigm, with various IP cores interconnected a high-speed communication protocol allowing them to communicate with one another. The processor is able to configure and use the pheripherals by writing and reading to memory-mapped IO registers.
 
@@ -143,7 +169,7 @@ The memories are integrated in the chip with configurable size and address. By d
 
 It also provides bebug functionality by way of the RISC-V debug specification 0.13.2 and the JTAG TAP specification.
 
-### 1.8.2. Security Features
+### 1.7.2. Security Features
 
 As a RoT, the OpenTitan SoC implements various security features. Outside of its secure cryptopgraphic functions, it also provides a secure boot flow that integrates multiple memory integrity checks, various access control measures such as lock bits for pheripheral configuration registers and memory regions, an integrity scheme integrated into the TL-UL crossbar, and security alerts that are triggered under defined conditions that suggest suspicious behaviour. 
 
@@ -175,7 +201,7 @@ to  feature that can overwrite the entire memory with pseudorandom data via a so
 
 The flash controller provides also optional memory scrambling and integrity bits. It also provides up to software-configurable 8 memory regions with configurable access policies.
 
-### 1.8.3. Collateral
+### 1.7.3. Collateral
 The OpenTitan SoC provides extensive collateral. Collateral in this context, refers to any additional information that describes the functionality of a design and its components. The collateral for this SoC consists of the documentation for all of its IP and contains its security features, interfaces, interactions with software, testplans, and block diagrams. Unique to this SoC are the hjson files that describe all of an IP's parameters, registers, security countermeasures, etc. This is extremely useful to obtain designer context behind the design. For example, from the AES hjson file, we can understand the function of parameter `SecMasking`, as shown in figure 4.
 
 ![AES SecMasking](images/aes_192.png)
