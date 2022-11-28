@@ -8,11 +8,11 @@
   - [1.4. Bug Selection](#14-bug-selection)
     - [1.4.1. CWE-1231 / CWE-1233](#141-cwe-1231--cwe-1233)
     - [1.4.2. CWE-1244](#142-cwe-1244)
-    - [1.4.3. CWE-1260](#143-cwe-1260)
+    - [1.4.3. CWE-1](#143-cwe-1)
     - [1.4.4. CWE-1272](#144-cwe-1272)
     - [1.4.5. CWE-1277](#145-cwe-1277)
   - [1.5. Bug Insertion](#15-bug-insertion)
-    - [1.5.1. Bug 1:](#151-bug-1)
+    - [1.5.1. Bug 1: Incorrect Lock Bit Behaviour](#151-bug-1-incorrect-lock-bit-behaviour)
     - [1.5.2. Bug 2:](#152-bug-2)
     - [1.5.3. Bug 3:](#153-bug-3)
     - [1.5.4. Bug 4:](#154-bug-4)
@@ -129,7 +129,7 @@ Figure 1: Hack@DAC 2021 Debug AES Keys Access Control Bug
 
 The sequence of logical operations involved for this CWE are relatively simple, as it must all be related to reads/writes to the aforementioned debug access control signal. The challenging part is determining all appropriate time where these operations (read/write) must happen. In cases where (if?) there are multiple debug access levels, the value being read/written is also important. The first scenario I discussed presented a situation where access control was written too late, the second scenario presented a situation where it was not read when it should have been. It follows that any modification to these reads or writes could introduce this CWE. Considering the two scenarios again, this could mean removing the reset value of the register storing the bit and removing an access control check (as is shown in the snippet), respectively. 
 
-### 1.4.3. CWE-1260
+### 1.4.3. CWE-1
 Memory in computer systems is organized into ranges that are controlled by software and enforced by a Memory Management Unit (MMU) or a Memory Protection Unit (MPU). There are also physical memory regions enforced by the Physical Memory Management (PMP) unit, meant to separate physical memory space for each hardware thread (or *hart*). For example, the [RISC-V privileged specification](https://github.com/riscv/riscv-isa-manual/releases/download/Priv-v1.12/riscv-privileged-20211203.pdf) contains a PMP implementation. The software-controlled address ranges are typically software-configurable to allow for dynamic change during operation. CWE-1260 is related to the overlapping of these memory ranges. While overlapping memory regions is typically allowed, it can introduce risks if memory ranges with different privilege levels are overlapping and the MMU/MPU is not designed to handle these overlaps well. The 
 
 ### 1.4.4. CWE-1272
@@ -138,7 +138,17 @@ Memory in computer systems is organized into ranges that are controlled by softw
 
 ## 1.5. Bug Insertion 
 
-### 1.5.1. Bug 1: 
+### 1.5.1. Bug 1: Incorrect Lock Bit Behaviour
+As discussed [above](#), correct lock bit behaviour is critical to secure behaviour. One application of lock bits in the OpenTitan SoC is for the write-enable of cryptographic accelerator configuration registers. It is crucial to ensure that these configuration registers cannot be modified during operation because an attacker could manipulate them to recover secret information like the key or cause denial of service. For example, the key could be updated during operation to cause errors in the encryption or hash. 
+
+The KMAC IP in the OpenTitan SoC contains such a lock bit, called `cfg_regwen`. This bit controls the write-enable of pracitically all sensitive registers in the KMAC IP, such as the CSR registers, key registers, the hast count register, etc. By default, this bit is set high (the registers are writeable) when it is in idle. This funtionality is implemented in the OpenTitan SoC using two lines, as shown in Fig. ?. It is fairly straightforward -- `cfg_regwen` is set to high if and only if the KMAC module is in `IDLE`. To insert a bug into this behavior a simple but effective alteration is to modify it so that `cfg_regwen` is always high. It is also reasonable to assume this would be a "real-life" mistake during development/debug if for example, there was a bug in the FSM and the designer temporarily wanted the ability to always write to CSR registers but forgot to change it back afterwards. The new, buggy behaviour might then be described as shown in Fig. ?. 
+
+![](images/ot_kmac_good.png)
+Figure ?: Original KMAC Lock Bit Behavior
+
+![](images/ot_kmac_bad.png)
+Figure ?: Buggy KMAC Lock Bit Behavior
+
 ### 1.5.2. Bug 2: 
 ### 1.5.3. Bug 3: 
 ### 1.5.4. Bug 4: 

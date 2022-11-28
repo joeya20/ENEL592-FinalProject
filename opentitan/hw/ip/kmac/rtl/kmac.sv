@@ -458,7 +458,9 @@ module kmac
   assign engine_stable = sha3_fsm == sha3_pkg::StIdle;
 
   // SEC_CM: CFG_SHADOWED.CONFIG.REGWEN
-  assign hw2reg.cfg_regwen.d = engine_stable;
+  // assign hw2reg.cfg_regwen.d = engine_stable;
+  assign hw2reg.cfg_regwen.d = 1'b1;  
+  //CWE-1233: regwen is always 1 so kmac can be configured during operation!!
 
   // Secret Key
   // Secret key is defined as external register. So the logic latches when SW
