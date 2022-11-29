@@ -14,7 +14,7 @@
   - [1.5. Bug Insertion](#15-bug-insertion)
     - [1.5.1. Bug 1: Incorrect Lock Bit Behaviour](#151-bug-1-incorrect-lock-bit-behaviour)
     - [1.5.2. Bug 2: Persistent SRAM Data](#152-bug-2-persistent-sram-data)
-    - [1.5.3. Bug 3:](#153-bug-3)
+    - [1.5.3. Bug 3: Unwritable Flash Memory](#153-bug-3-unwritable-flash-memory)
     - [1.5.4. Bug 4:](#154-bug-4)
     - [1.5.5. Bug 5:](#155-bug-5)
   - [1.6. Conclusion](#16-conclusion)
@@ -189,8 +189,11 @@ Figure ?: Buggy SRAM Key Request
 ![](images/ot_sram_bad2.png)   
 Figure ?: Buggy SRAM Initialization Request
 
-### 1.5.3. Bug 3: 
+### 1.5.3. Bug 3: Unwritable Flash Memory
+As discussed in section [?](#145-cwe-1277), a potential introduction of CWE 1277 into a design is through the inability to write to Flash memory. If we assume that there are no defects in the memory itself, any denial of service would originate from the Flash controller. The flash controller of the OpenTitan SoC is seperated into two "entities". The Flash Protocol Controller interacts with software and other hardware components while the Flash Protocol Controller is responsible for interacting with the memory itself. I focused since all writes are issued from the protocol controller. Figure ? illustrates the original design, and the modification. Initially, `prog_op` is asserted if the incoming operation is a flash program (write) request. The buggy behaviour now incorrectly compares it to a read operation, `FlashOpRead`. This has two effects: (i) the flash controller cannot issue a write when desired, and (ii) there will be contention between the `rd_op` and `prog_op` when a read is desired. For this bug, we are concerned with the first effect.
 
+![](images/ot_flash.png)
+Figure ?: Flash Write Operation Bug
 
 ### 1.5.4. Bug 4: 
 ### 1.5.5. Bug 5: 

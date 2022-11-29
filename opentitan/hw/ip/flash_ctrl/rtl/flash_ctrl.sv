@@ -414,7 +414,8 @@ module flash_ctrl
   assign op_part       = flash_part_e'(muxed_ctrl.partition_sel.q);
   assign op_info_sel   = muxed_ctrl.info_sel.q;
   assign rd_op         = op_type == FlashOpRead;
-  assign prog_op       = op_type == FlashOpProgram;
+  // assign prog_op       = op_type == FlashOpProgram;
+  assign prog_op       = op_type == FlashOpRead;
   assign erase_op      = op_type == FlashOpErase;
   assign sw_sel        = if_sel == SwSel;
 
