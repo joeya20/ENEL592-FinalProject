@@ -212,7 +212,7 @@ module sram_ctrl
     if(!rst_ni) begin
       init_q <= 1'b0;
     end else begin
-      init_q <= init_d;
+      // init_q <= init_d; - CWE-1272
     end
   end
 
@@ -285,7 +285,7 @@ module sram_ctrl
       key_q             <= RndCnstSramKey;
       nonce_q           <= RndCnstSramNonce;
     end else begin
-      key_req_pending_q <= key_req_pending_d;
+      // key_req_pending_q <= key_req_pending_d; CWE-1272
       if (key_ack) begin
         key_q   <= key_d;
         nonce_q <= nonce_d;
