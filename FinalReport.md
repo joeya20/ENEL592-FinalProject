@@ -17,6 +17,7 @@
     - [1.5.3. Bug 3: Unwritable Flash Memory](#153-bug-3-unwritable-flash-memory)
     - [1.5.4. Bug 4: Software-Readable Key Register](#154-bug-4-software-readable-key-register)
     - [1.5.5. Bug 5: Memory Range Overlap Reversed Priority](#155-bug-5-memory-range-overlap-reversed-priority)
+    - [Discussion](#discussion)
   - [1.6. Conclusion](#16-conclusion)
   - [1.7. Appendix A: OpenTitan](#17-appendix-a-opentitan)
     - [1.7.1. Architecture](#171-architecture)
@@ -65,29 +66,39 @@ All of these 12 CWEs are all applicable to bug insertion at the RTL. They can al
 
 To narrow down the list of CWEs to insert, I further classified them by CWE Category, the highest level of the CWE hierarchy. Again, the goal is to develop a distributed set of bugs and classifying them by category will allow me to gain the most functional variety. The CWE categories and their summaries were obtained from the [CWE list](https://cwe.mitre.org/data/definitions/1194.html). 
 
-**CWE-1196 - Security Flow Issues:** weaknesses in this category are related to improper design of full-system security flows, including but not limited to secure boot, secure update, and hardware-device attestation.
+**CWE-1196 - Security Flow Issues:** weaknesses in this category are related to improper design of full-system security flows, including but not limited to secure boot, secure update, and hardware-device attestation. 
 
 - CWE-1274: Improper Access Control for Volatile Memory Containing Boot Code
 
 **CWE-1198 - Privilege Separation and Access Control Issues:** weaknesses in this category are related to features and mechanisms providing hardware-based isolation and access control (e.g., identity, policy, locking control) of sensitive shared hardware resources such as registers and fuses.
+
+
 
 - CWE-1189: Improper Isolation of Shared Resources on System-on-a-Chip (SoC)
 - CWE-1260: Improper Handling of Overlap Between Protected Memory Ranges
 
 **CWE-1199 - General Circuit and Logic Design Concerns:** weaknesses in this category are related to hardware-circuit design and logic (e.g., CMOS transistors, finite state machines, and registers) as well as issues related to hardware description languages such as System Verilog and VHDL.
 
+
+
 - CWE-1231: Improper Prevention of Lock Bit Modification
 - CWE-1233: Security-Sensitive Hardware Controls with Missing Lock Bit Protection
 
 **CWE-1205 - Security Primitives and Cryptography Issues:** weaknesses in this category are related to hardware implementations of cryptographic protocols and other hardware-security primitives such as physical unclonable functions (PUFs) and random number generators (RNGs).
 
+
+
 - CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation
 
 **CWE-1206 - Power, Clock, Thermal, and Reset Concerns:** weaknesses in this category are related to system power, voltage, current, temperature, clocks, system state saving/restoring, and resets at the platform and SoC level.
 
+
+
 - CWE-1256: Improper Restriction of Software Interfaces to Hardware Features
 
 **CWE-1207 - Debug and Test Problems:** weaknesses in this category are related to hardware debug and test interfaces such as JTAG and scan chain.
+
+
 
 - CWE-1191: On-Chip Debug and Test Interface With Improper Access Control
 - CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State
@@ -95,10 +106,14 @@ To narrow down the list of CWEs to insert, I further classified them by CWE Cate
 
 **CWE-1208 - Cross-Cutting Problems:** weaknesses in this category can arise in multiple areas of hardware design or can apply to a wide cross-section of components.
 
+
+
 - CWE-1277: Firmware Not Updateable
 
 **CWE-1388 - Physical Access Issues and Concerns:** weaknesses in this category are related to concerns of physical access.
 - CWE-1300: Improper Protection of Physical Side Channels
+
+
 
 For each category, I chose a representative CWE that I believe will require the most minimal amount of modification to the design to demonstrate how easily they can introduced and to make them as "stealthy" as possible, theoretically making them more challenging to detect. Then, I filtered it down to a final set of 5 CWEs to implement. The criteria for this filter was simply personal interest. 
 
@@ -212,6 +227,8 @@ Figure ?:
 
 ![](images/ot_flash_mp_bad.jpg)
 Figure ?: 
+
+### Discussion
 
 ## 1.6. Conclusion
 
