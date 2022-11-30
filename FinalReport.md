@@ -15,8 +15,8 @@
     - [1.5.1. Bug 1: Incorrect Lock Bit Behaviour](#151-bug-1-incorrect-lock-bit-behaviour)
     - [1.5.2. Bug 2: Persistent SRAM Data](#152-bug-2-persistent-sram-data)
     - [1.5.3. Bug 3: Unwritable Flash Memory](#153-bug-3-unwritable-flash-memory)
-    - [1.5.4. Bug 4:](#154-bug-4)
-    - [1.5.5. Bug 5:](#155-bug-5)
+    - [1.5.4. Bug 4: Software-Readable Key Register](#154-bug-4-software-readable-key-register)
+    - [1.5.5. Bug 5: Memory Range Overlap Reversed Priority](#155-bug-5-memory-range-overlap-reversed-priority)
   - [1.6. Conclusion](#16-conclusion)
   - [1.7. Appendix A: OpenTitan](#17-appendix-a-opentitan)
     - [1.7.1. Architecture](#171-architecture)
@@ -140,7 +140,7 @@ The sequence of logical operations involved for this CWE are relatively simple, 
 ### 1.4.3. CWE-1260
 Memory in computer systems is organized into ranges that are controlled by software and enforced by a Memory Management Unit (MMU) or a Memory Protection Unit (MPU). There are also physical memory regions enforced by the Physical Memory Management (PMP) unit, meant to separate physical memory space for each hardware thread (or *hart*). For example, the [RISC-V privileged specification](https://github.com/riscv/riscv-isa-manual/releases/download/Priv-v1.12/riscv-privileged-20211203.pdf) contains a PMP implementation. The software-controlled address ranges are typically software-configurable to allow for dynamic change during operation. CWE-1260 is related to the overlapping of these memory ranges. While overlapping memory regions is typically allowed, it can introduce risks if memory ranges with different privilege levels are overlapping and the MMU/MPU is not designed to handle these overlaps well. Consider a scenario where there are two memory regions, `region1` and `region2`. `region1` is dedicated to privileged software and its configuration (location and size) can only be modified by privileged software. `region2` is usable and configurable by both privileged and unprivileged software. A potential attacker can configure `region2` such that it overlaps with `region1`, and give itself the ability to read/write/execute the privileged memory. To address these issues, overlap between different access levels should not be allowed or a priority hierarchy should be established. Using the same scenario, the priority required to access the overlapped region should be the highest level of priority required of either regions. 
 
-This CWE is challenging to mitigate because address spaces are dynamically configured at runtime. There is no way of pre-verifying address ranges during design/implementation/validation. From a hardware standpoint, the only course of action is to design/implement/verify the MMU/MPU to ensure it implements security features that address these issues. It follows that at the hardware level, this CWE can manifest in memory control units that are responsible for configuring and enforcing memory ranges. Specifically within those designs, the functionality that performs the access control checks is of interest. Figure 2 illustrates the priotization of PMP regions in the Ibex core used in the OpenTitan SoC. This is one of the functional regions where this CWE can get introduced. As the comment notes, the PMP entries are prioritized from 0 up to N-1. A simple albeit potent bug here would be to reverse this ordering to N-1 down to 0. 
+This CWE is challenging to mitigate because address spaces are dynamically configured at runtime. There is no way of pre-verifying address ranges during design/implementation/validation. From a hardware standpoint, the only course of action is to design/implement/verify the MMU/MPU to ensure it implements security features that address these issues. It follows that at the hardware level, this CWE can manifest in memory control units that are responsible for configuring and enforcing memory ranges. Specifically within those designs, the functionality that performs the access control checks is of interest. Figure 2 illustrates the priotization of PMP regions in the Ibex core used in the OpenTitan SoC. This is one of the functional regions where this CWE can get introduced. As the comment notes, the PMP entries are prioritized from 0 up to N-1. This conforms with the RISC-V privileged specification. A simple albeit potent bug here would be to reverse this ordering to N-1 down to 0. 
 
 ![memory priotization](images/ot_pmp.jpg)
 Figure 2: Ibex Core PMP Memory Region Priotization
@@ -173,7 +173,7 @@ The KMAC IP in the OpenTitan SoC contains such a lock bit, called `cfg_regwen`. 
 ![](images/ot_kmac_good.png)    
 Figure ?: Original KMAC Lock Bit Behavior
 
-![](images/ot_kmac_bad.png)   
+![](images/ot_kmac_bad.png)     
 Figure ?: Buggy KMAC Lock Bit Behavior
 
 ### 1.5.2. Bug 2: Persistent SRAM Data
@@ -190,13 +190,28 @@ Figure ?: Buggy SRAM Key Request
 Figure ?: Buggy SRAM Initialization Request
 
 ### 1.5.3. Bug 3: Unwritable Flash Memory
-As discussed in section [?](#145-cwe-1277), a potential introduction of CWE 1277 into a design is through the inability to write to Flash memory. If we assume that there are no defects in the memory itself, any denial of service would originate from the Flash controller. The flash controller of the OpenTitan SoC is seperated into two "entities". The Flash Protocol Controller interacts with software and other hardware components while the Flash Protocol Controller is responsible for interacting with the memory itself. I focused since all writes are issued from the protocol controller. Figure ? illustrates the original design, and the modification. Initially, `prog_op` is asserted if the incoming operation is a flash program (write) request. The buggy behaviour now incorrectly compares it to a read operation, `FlashOpRead`. This has two effects: (i) the flash controller cannot issue a write when desired, and (ii) there will be contention between the `rd_op` and `prog_op` when a read is desired. For this bug, we are concerned with the first effect.
+As discussed in section [?](#145-cwe-1277), a potential introduction of CWE 1277 into a design is through the inability to write to Flash memory. If we assume that there are no defects in the memory itself, any denial of service would originate from the Flash controller. The flash controller of the OpenTitan SoC is seperated into two "entities". The Flash Protocol Controller interacts with software and other hardware components while the Flash Protocol Controller is responsible for interacting with the memory itself. I focused on the protocol controller since all writes are issued from it. Figure ? illustrates the original design, and the modification. Initially, `prog_op` is asserted if the incoming operation is a flash program (write) request. The buggy behaviour now incorrectly compares it to a read operation, `FlashOpRead`. This has two effects: (i) the flash controller cannot issue a write when desired, and (ii) there will be contention between the `rd_op` and `prog_op` when a read is desired. For this bug, we are concerned with the first effect.
 
-![](images/ot_flash.png)
+![](images/ot_flash.png)    
 Figure ?: Flash Write Operation Bug
 
-### 1.5.4. Bug 4: 
-### 1.5.5. Bug 5: 
+### 1.5.4. Bug 4: Software-Readable Key Register
+This bug is meant to demonstrate that a seemingly CWE (CWE-1276) and "simple" bug can have irreparable consequences. As discussed above, module instantions are crucial to the secure behavior of hardware. Most times, incorrectly connected child modules will have noticable functional impact that will alert of an issue during verification. On the security side however, it may go undetected unless the security feature which depends on the uncorrectly connected port(s) are tested. In the OpenTitan SoC, every memory-mapped register is created as a module instantiation, as shown in Fig. ?. This specific register is meant to hold part of the AES key. As we can see, `.re` is "hard-coded" to `1'b0`, signifying that is it a write-only register that cannot be read by software. This is crucial to the confidentiality of the system as malicious software could attempt to read the key and leak it. It follows that inverting that bit will make it always readable. This is shown in Fig ?. If this is repeated for every key register, the whole key can be stealthily leaked by software. 
+
+![](images/ot_aes_reg_good.jpg)   
+Figure ?: Memory-mapped register for AES Key
+
+![](images/ot_aes_reg_good.jpg)   
+Figure ?: Buggy Memory-mapped register for AES Key
+
+### 1.5.5. Bug 5: Memory Range Overlap Reversed Priority
+As discussed in [section ?](#143-cwe-1260), the priority between overlapping memory ranges in given to the lower "index" range. This idea is extended in the Flash controller -- the documentation states "Similar to RISCV pmp, if two region overlaps, the lower region index has higher priority". The memory regions in flash memory are configurable via two registers for each region (up to 7). In the first register, `MP_REGION_CFG_X`, the bit fields `EN_X` enables the region, `RD_EN_0` makes the region readable, `PROG_EN_0` makes the region programmable, `ERASE_EN_0` makes the region erasable, `SCRAMBLE_EN_0` makes the region scramable, `ECC_EN_0` makes the region ECC and Integrity checked, and `HE_EN_0` makes the region "high endurance enabled". The second register, `MP_REGION_X` holds two bit fields, `BASE_X` and `SIZE_0` that configure the base page number and number of pages of the memory region. Both these registers also have `REGWEN` lock bits. Fig. illustrates the memory region checking functionality in OpenTitan. The first `always_comb` block checks for the matching region starting from the lowest region index, 0. The second outputs the appropriate access control for that region, stored in `region_attrs_i[i].cfg`. Reversing this ordering to decrementing from the highest memory region (e.g., `Regions-1`) would break the "agreement" held by the software and hardware and result in improperly managed region overlap, possibly leading to loss of confidentiality, integrity, and availability. This bug is shown in Fig. ?.
+
+![](images/ot_flash_mp_good.jpg)
+Figure ?: 
+
+![](images/ot_flash_mp_bad.jpg)
+Figure ?: 
 
 ## 1.6. Conclusion
 

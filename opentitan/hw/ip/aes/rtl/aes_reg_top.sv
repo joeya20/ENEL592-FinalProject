@@ -276,7 +276,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_0 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share0_0_we),
     .wd     (key_share0_0_wd),
     .d      (hw2reg.key_share0[0].d),
@@ -297,7 +297,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_1 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share0_1_we),
     .wd     (key_share0_1_wd),
     .d      (hw2reg.key_share0[1].d),
@@ -318,7 +318,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_2 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share0_2_we),
     .wd     (key_share0_2_wd),
     .d      (hw2reg.key_share0[2].d),
@@ -339,7 +339,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_3 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share0_3_we),
     .wd     (key_share0_3_wd),
     .d      (hw2reg.key_share0[3].d),
@@ -360,7 +360,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_4 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share0_4_we),
     .wd     (key_share0_4_wd),
     .d      (hw2reg.key_share0[4].d),
@@ -381,7 +381,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_5 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share0_5_we),
     .wd     (key_share0_5_wd),
     .d      (hw2reg.key_share0[5].d),
@@ -402,7 +402,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_6 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share0_6_we),
     .wd     (key_share0_6_wd),
     .d      (hw2reg.key_share0[6].d),
@@ -423,7 +423,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share0_7 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share0_7_we),
     .wd     (key_share0_7_wd),
     .d      (hw2reg.key_share0[7].d),
@@ -444,7 +444,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_0 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share1_0_we),
     .wd     (key_share1_0_wd),
     .d      (hw2reg.key_share1[0].d),
@@ -465,7 +465,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_1 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share1_1_we),
     .wd     (key_share1_1_wd),
     .d      (hw2reg.key_share1[1].d),
@@ -486,7 +486,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_2 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share1_2_we),
     .wd     (key_share1_2_wd),
     .d      (hw2reg.key_share1[2].d),
@@ -507,7 +507,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_3 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share1_3_we),
     .wd     (key_share1_3_wd),
     .d      (hw2reg.key_share1[3].d),
@@ -528,7 +528,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_4 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share1_4_we),
     .wd     (key_share1_4_wd),
     .d      (hw2reg.key_share1[4].d),
@@ -549,7 +549,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_5 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share1_5_we),
     .wd     (key_share1_5_wd),
     .d      (hw2reg.key_share1[5].d),
@@ -570,7 +570,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_6 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share1_6_we),
     .wd     (key_share1_6_wd),
     .d      (hw2reg.key_share1[6].d),
@@ -591,7 +591,7 @@ module aes_reg_top (
   prim_subreg_ext #(
     .DW    (32)
   ) u_key_share1_7 (
-    .re     (1'b0),
+    .re     (1'b1),
     .we     (key_share1_7_we),
     .wd     (key_share1_7_wd),
     .d      (hw2reg.key_share1[7].d),
