@@ -11,18 +11,26 @@
     - [1.4.3. CWE-1260](#143-cwe-1260)
     - [1.4.4. CWE-1272](#144-cwe-1272)
     - [1.4.5. CWE-1277](#145-cwe-1277)
-  - [1.5. Bug Insertion](#15-bug-insertion)
+  - [1.5. RTL Bug Insertion](#15-rtl-bug-insertion)
     - [1.5.1. Bug 1: Incorrect Lock Bit Behaviour](#151-bug-1-incorrect-lock-bit-behaviour)
     - [1.5.2. Bug 2: Persistent SRAM Data](#152-bug-2-persistent-sram-data)
     - [1.5.3. Bug 3: Unwritable Flash Memory](#153-bug-3-unwritable-flash-memory)
     - [1.5.4. Bug 4: Software-Readable Key Register](#154-bug-4-software-readable-key-register)
     - [1.5.5. Bug 5: Memory Range Overlap Reversed Priority](#155-bug-5-memory-range-overlap-reversed-priority)
-    - [Discussion](#discussion)
-  - [1.6. Conclusion](#16-conclusion)
-  - [1.7. Appendix A: OpenTitan](#17-appendix-a-opentitan)
-    - [1.7.1. Architecture](#171-architecture)
-    - [1.7.2. Security Features](#172-security-features)
-    - [1.7.3. Collateral](#173-collateral)
+    - [1.5.6. Discussion](#156-discussion)
+  - [1.6. HLS-Induced Security Weaknesses](#16-hls-induced-security-weaknesses)
+    - [1.6.1. Security Weakness: Intermediate Result Leakage](#161-security-weakness-intermediate-result-leakage)
+    - [1.6.2. Automatic Detection: Static Analysis](#162-automatic-detection-static-analysis)
+    - [1.6.3. Automatic Detection: Formal Verification](#163-automatic-detection-formal-verification)
+      - [1.6.3.1. Property Formulation](#1631-property-formulation)
+      - [1.6.3.2. Verification Environment Generation](#1632-verification-environment-generation)
+    - [Automatic Correction: Directive Generation](#automatic-correction-directive-generation)
+    - [1.6.4. Experimental Results and Discussion](#164-experimental-results-and-discussion)
+  - [1.7. Conclusion](#17-conclusion)
+  - [1.8. Appendix A: OpenTitan](#18-appendix-a-opentitan)
+    - [1.8.1. Architecture](#181-architecture)
+    - [1.8.2. Security Features](#182-security-features)
+    - [1.8.3. Collateral](#183-collateral)
 
 ## 1.2. Introduction
 The aim of my ENEL 592 final project is to insert a set of security bugs into an System-on-Chip (SoC) design, and create associated testbenchs and firmware that demonstrate their implications. This is the culmination of my two previous assignments, where I surveyed hardware security verification and open-source SoC designs. The bugs should be as "realistic" as possible; they should resemble bugs found in-the-wild and be impactful.
@@ -72,33 +80,23 @@ To narrow down the list of CWEs to insert, I further classified them by CWE Cate
 
 **CWE-1198 - Privilege Separation and Access Control Issues:** weaknesses in this category are related to features and mechanisms providing hardware-based isolation and access control (e.g., identity, policy, locking control) of sensitive shared hardware resources such as registers and fuses.
 
-
-
 - CWE-1189: Improper Isolation of Shared Resources on System-on-a-Chip (SoC)
 - CWE-1260: Improper Handling of Overlap Between Protected Memory Ranges
 
 **CWE-1199 - General Circuit and Logic Design Concerns:** weaknesses in this category are related to hardware-circuit design and logic (e.g., CMOS transistors, finite state machines, and registers) as well as issues related to hardware description languages such as System Verilog and VHDL.
-
-
 
 - CWE-1231: Improper Prevention of Lock Bit Modification
 - CWE-1233: Security-Sensitive Hardware Controls with Missing Lock Bit Protection
 
 **CWE-1205 - Security Primitives and Cryptography Issues:** weaknesses in this category are related to hardware implementations of cryptographic protocols and other hardware-security primitives such as physical unclonable functions (PUFs) and random number generators (RNGs).
 
-
-
 - CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation
 
 **CWE-1206 - Power, Clock, Thermal, and Reset Concerns:** weaknesses in this category are related to system power, voltage, current, temperature, clocks, system state saving/restoring, and resets at the platform and SoC level.
 
-
-
 - CWE-1256: Improper Restriction of Software Interfaces to Hardware Features
 
 **CWE-1207 - Debug and Test Problems:** weaknesses in this category are related to hardware debug and test interfaces such as JTAG and scan chain.
-
-
 
 - CWE-1191: On-Chip Debug and Test Interface With Improper Access Control
 - CWE-1244: Internal Asset Exposed to Unsafe Debug Access Level or State
@@ -106,14 +104,10 @@ To narrow down the list of CWEs to insert, I further classified them by CWE Cate
 
 **CWE-1208 - Cross-Cutting Problems:** weaknesses in this category can arise in multiple areas of hardware design or can apply to a wide cross-section of components.
 
-
-
 - CWE-1277: Firmware Not Updateable
 
 **CWE-1388 - Physical Access Issues and Concerns:** weaknesses in this category are related to concerns of physical access.
 - CWE-1300: Improper Protection of Physical Side Channels
-
-
 
 For each category, I chose a representative CWE that I believe will require the most minimal amount of modification to the design to demonstrate how easily they can introduced and to make them as "stealthy" as possible, theoretically making them more challenging to detect. Then, I filtered it down to a final set of 5 CWEs to implement. The criteria for this filter was simply personal interest. 
 
@@ -177,8 +171,7 @@ As mentioned above, the logical operations, at a high-level, for a software-init
 ![OpenTitan Flash Data Scrambling](https://docs.opentitan.org/hw/ip/flash_ctrl/doc/flash_integrity.svg)
 Figure 3: OpenTitan Flash Data Scrambling Flow
 
-
-## 1.5. Bug Insertion 
+## 1.5. RTL Bug Insertion 
 
 ### 1.5.1. Bug 1: Incorrect Lock Bit Behaviour
 As discussed [above](#141-cwe-1231), correct lock bit behaviour is critical to secure behaviour. One application of lock bits in the OpenTitan SoC is for the write-enable of cryptographic accelerator configuration registers. It is crucial to ensure that these configuration registers cannot be modified during operation because an attacker could manipulate them to recover secret information like the key or cause denial of service. For example, the key could be updated during operation to cause errors in the encryption or hash. 
@@ -228,11 +221,85 @@ Figure ?:
 ![](images/ot_flash_mp_bad.jpg)
 Figure ?: 
 
-### Discussion
+### 1.5.6. Discussion
 
-## 1.6. Conclusion
 
-## 1.7. Appendix A: OpenTitan
+## 1.6. HLS-Induced Security Weaknesses
+High-Level Synthesis (HLS) is a design process which takes in an algorithm specification, in the form of High-Level Language (C/C++/SystemC) code, and translates it into a functionally equivalent cycle accurate RTL design. HLS shifts the abstraction one level higher to assist designers in creating and verifying (through co-simulation) designs faster. It provides directives or pragmas that give fine-grained control over optimizations and design decisions (pipelining, unrolling, etc.). This allows designers to explore the design space and establish tradeoffs more efficiently. Part of my work this semester, in collaboration with a Ph.D. student, involved investigating the potential security concerns that HLS can introduce into hardware designs. A previous work presented these possible concerns and our aim was to analyze them, determine their root cause (design patterns vs tool optimizations), and develop tools to detect/correct them automatically. It is important to mention that HLS-induced weaknesses are not a result of "incorrect" translation from HLL to RTL. Instead, they are either a result of the different intrinsic behaviors between software and hardware or the design optimizations that are enabled by default or user-enabled.
+
+### 1.6.1. Security Weakness: Intermediate Result Leakage
+One of the security weaknesses discussed in the previous paper was the leakage of intermediate values. Non-trivial computation in hardware is usually pipelined to reduce the clock frequency of the system. For example, for AES, instead of computing all 10/12/14 rounds in 1 clock cycle, an alternative would be to compute 1 round per cycle and store intermediate results to be used in subsequent cycles. It was discovered that under specific conditions, these intermediate results would be observable at the module output. An example of this behaviour is shown in Fig ?. The leakage of these values can have disastrous effect in security-critical IP, such as AES cores, where cryptanalysis becomes significantly easier given intermediate results.  We initially conducted experiments to determine if the HLL code would indicate the presence of this weakness but there were too many factors to consider (i.e., C++ compiler, HLS tool algorithms, optimizations, etc.). This meant that it was practically impossible to correlate design patterns to the resulting RTL design concretely. Instead, we found it more practical to detect the issue directly from the RTL design. We took two approaches to this, static analysis and formal verification. The formal verification was used as a more rigourous check to determine the accurary of the scanner and gain some insight on the performance benefits of using static analysis vs "traditional" verification methods.
+
+### 1.6.2. Automatic Detection: Static Analysis
+We created a static analysis scanner that parse Verilog designs into Abstract Syntax Trees (ASTs) and process them using the Visitor pattern. The visitor pattern is a popular design pattern to seperate algorithms from data structures, resulting in the ability to add new functionality without modifying the original source code. We heuristically determined the following patterns. First, the block-level outputs that are in interested in are always assigned using continuous assignment (`assign` keyword in Verilog/SystemVerilog). Second, register signals generated by the HLS tool we used always end with the postfix `_reg`. Finally, leakage occured when the signal being assigned to the output was not from a register. This inuitively makes sense as non-registered signals are always updated. We combined these patterns to create a scanner which visits all `assign` statements, checks if a relevant signal in its left-hand side and checks if the signal being assigned ends with `_reg`. If not, we can assume that passthrough is present. This is a simple, and as we discovered, error-free solution because HLS implements syntactically identical patterns for functionally similar designs thanks to its template-based nature. It can be considered the "perfect designer" in that sense. The scanner was implemented using Pyverilog and Python and tested on multiple synthetic and realistic benchmarks. 
+
+### 1.6.3. Automatic Detection: Formal Verification   
+A formal verification automated flow was also created to verify the results of the scanner. Formal verification provides a mathematically exhaustive exploration of the state space to determine if undesired and/or desired behaviour occurs. Specifically, we used SystemVerilog Assertions to specify the desired behaviour. The critical part of using formal verification is understanding the behaviour being defined in the properties and being to specify exactly the desired requirements. A *safety property* is one that specifies that "something bad doesn't happen". For example, "the output of this module never changes unless the block operation is complete". A *liveness property* ensures that "something good eventually happens". For example, "the output must eventually change if the input changes". Once the property is defined, there are also nuances between property assertions and covers. *Assertions* ensure that the property always holds true, e.g., "this register must **always** go to 0 if reset if high". *Covers* ensure that it is possible for the property to be true, e.g., "it must be possible to go from state A to state B". There are also constraints (`assume` statements) that are used to reduce the state space, typically to remove false positives and/or improve performance. 
+
+#### 1.6.3.1. Property Formulation    
+In this scenario, we are attempting to verify that the output of the block **must** only update when the block operation is complete. "Must" indicates that this property will be asserted and the property is ensuring that something bad (i.e., the output updating prematurely) doesn't happen, so it is a safety property. Next, we must define the desired behaviour. We again take advantage of the consistency of HLS-generated blocks and the top-level control signals our HLS tool adds by default. Specifically, it will always add a `done` signal that is asserted for 1 cycle when block-level operation is completed. We can use this knowledge to define a property as shown in listing 1. The property states that a change in `in`, followed by a change in `out` after an indeterminate number of cycles implicates that `done` must be asserted in the same clock cycle. The `done` signal is asserted when the end of the block-level function is reached and de-asserted a clock cycle later. This specifies our desired behavior that the output should only change when the operation is complete.
+
+```systemverilog
+assert property(
+  always @ (posedge clk) disable iff(rst) 
+  $changed(in) ##[1:$] $changed(out) |-> $rose(done);
+);
+```
+Listing 1: No Passthrough SVA Property
+
+#### 1.6.3.2. Verification Environment Generation
+We automated the formal verification process by automatically generating properties and verification modules. This process begins by first obtaining the top-level module name and top-level I/O signal names. A verification module is then created using this information -- the relevant top-level IO is added to the verification module's IO. For each unique input-output pair, a new property is instantiated inside of the verification module. Finally, a `bind` statement is added to a "bind file" using the top-level module name. The names of all of the new files and existing design files are then used to create a TCL script that completes the setup and verification when called with Cadence JasperGold, the formal verification tool we used. 
+
+### Automatic Correction: Directive Generation
+Two conditions must be met to mitigate the passthrough weakness: (i) a registered output, and (ii) appropriate control logic. The registered output is necessary to separate the intermediate output net to the top-level output net. The control logic enables the added register only when the operation is complete. We intuited that weaknesses can be remediated using the directives of an HLS tool. The idea being that after we detect a weakness, we can add the required directive(s) to the corresponding file of the HLS project. After re-running the synthesis, we can scan the generated design again to validate that the weakness has been fixed. If it is still present, an error message is raised to get the attention of the designer for manual analysis. We investigated the documentation of a typical commercial tool, as an example, identifying three candidate solutions:
+1. **`set_directive_interface [OPTIONS] <location> <port>`** specifies how a function interface is synthesized. This directive provides port-level granularity (i.e. the ability to specify a specific port of a specific function) using `<location>`and `<port>`. Using this directive as a solution requires enabling the `-register` option and adding control logic using `-mode ap_hs|ap_ack|ap_ovld|ap_vld`.
+2. **`config_interface [OPTIONS]`** is a configuration command applied at the solution-level. This controls the default IO interface synthesized by the HLS tool for each function. We use this command with the `-register_io scalar_out|scalar_all` option. This specifies that all scalar outputs must be registered. There is no option to specify the mode of the registers. 
+3. **`config\_rtl [OPTIONS]`** is a configuration command. Using it with the `-register_all_io` option is similar to the configuration above but does not provide the ability to only modify outputs.   
+Similar directives exist for other tools. 
+
+In this specific instance, we propose using the `config_interface -register_io scalar_out` directive. `set_directive_interface` provides the most control but we found experimentally that it was not always effective. It also requires manually specified security-critical outputs and introduces the possibility of error. `config_interface` and `config_rtl` are functionally similar but the former provides the control to only register the outputs. It allows for a context-free approach, not requiring any signal names. For secure IP like cryptographic accelerators, no output should be updated intermediately. 
+
+### 1.6.4. Experimental Results and Discussion
+The results of the experiments are given in Table 1.
+
+Table 1: Experimental Results
+| DESIGN | LOC (.C) | TCL | LOC (.V) | Vulnerability Present |  | Design Characteristics |  |  | Time |  |
+|---|---|---|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
+|  |  |  |  |  | Latency | FF | LUT | Scanner Parse | Scanner Scan | Formal |
+| Factorial | 9 | DEFAULT | 597 | N | - | 104 | 172 | 1.224996838 | 0.001545164 | 0.028 |
+|  |  | REG | 497 | N | - | 171 | 177 | 1.222182221 | 0.001969594 | 0.02 |
+| Fibonacci | 11 | DEFAULT | 314 | Y | - | 98 | 159 | 1.205799277 | 0.000912264 | 0.02 |
+|  |  | REG | 249 | N | - | 181 | 144 | 1.218891101 | 0.001232714 | 0.02 |
+| Combined | 23 | inline off | 1067 | Y | - | 255 | 352 | 1.241450036 | 0.001459871 | 0.017 |
+|  |  | inline off + reg | 928 | N | - | 388 | 353 | 1.210921549 | 0.001183 | 0.033 |
+|  |  | REG | 786 | N | - | 338 | 313 | 1.256323047 | 0.001575409 | 0.045 |
+|  |  | EMPTY | 922 | N | - | 206 | 307 | 1.230187869 | 0.002145791 | 0.06 |
+| PRESENT | 205 | ALL | 5405 | Y | 73 | 539 | 2105 | 1.323337347 | 0.005241983 | 0.073 |
+|  |  | REG | 5535 | N | 110 | 808 | 2135 | 1.362591188 | 0.005700883 | 11.21 |
+|  |  | PIPELINE | 4488 | Y | 205 | 681 | 1697 | 1.357170563 | 0.005143854 | 0.048 |
+|  |  | UNROLL | 3463 | Y | 130 | 766 | 1598 | 1.317258597 | 0.004412583 | 0.069 |
+|  |  | EMPTY | 1717 | Y | 5956 | 659 | 2340 | 1.316133946 | 0.003116776 | 9.391 |
+| serpent | 331 | ALL | 4129 | Y | 36 | 667 | 1543 | 1.242949633 | 0.002426735 | 0.165 |
+|  |  | REG | 5303 | N | 337 | 4433 | 1766 | 1.275816957 | 0.003447497 | 22.859 |
+|  |  | PIPELINE | 4129 | Y | 36 | 667 | 1543 | 1.274372542 | 0.002633463 | 0.187 |
+|  |  | UNROLL | 4174 | - | 98 | 1430 | 1532 | 1.241780602 | 0.002217242 | - |
+|  |  | EMPTY | 2574 | Y | 21944 | 4434 | 5964 | 1.248128677 | 0.002531933 | 7.513 |
+| AES  | 372 | ALL | 6751 | Y | 532 | 1266 | 5860 | 1.286926845 | 0.006199542 | 0.088 |
+|  |  | REG | 7038 | N | 563 | 1983 | 5953 | 1.298245312 | 0.006208187 | 2.689 |
+|  |  | PIPELINE | 6325 | Y | 584 | 1629 | 11346 | 1.31156072 | 0.006155954 | 0.085 |
+|  |  | UNROLL | 4516 | Y | 1048 | 1453 | 6343 | 1.307233934 | 0.005468802 | 0.097 |
+|  |  | EMPTY | 10535 | Y | 10542 | 2015 | 15082 | 1.303846266 | 0.005323912 | 0.068 |
+| AES (vitis lib) | 303 | ALL | 23454 | Y | 60 | 14301 | 8122 | 1.27516172 | 0.004774896 | 28.638 |
+|  |  | REG | 23480 | N | 64 | 16203 | 8134 | 1.36882548 | 0.005540823 | 2.165 |
+|  |  | PIPELINE | 23454 | Y | 60 | 14301 | 8122 | 1.291424441 | 0.004844537 | 28.749 |
+|  |  | UNROLL | 3321 | Y | 484 | 1300 | 1646 | 1.272824068 | 0.003498296 | 1.813 |
+|  |  | EMPTY | 3120 | Y | 10844 | 2257 | 27440 | 1.262695441 | 0.002619167 | 0.77 |
+
+These results show that the weakness we are concerned about, passthrough is present in some cases in the synthetic examples, and all the time in the real examples, without the added correction directive. They also show that the proposed correction directive is a valid solution and all generated designs using the directive did not indicate the presence of the weakness. The most interesting result is that the scanner was 100% accurate when compared to the formal verification results, while being much more efficient for larger designs. This promising result is thanks to the "robotic" nature of the HLS-generated designs. These results should motivate the development of more scanners that target HLS-generated designs to catch security concerns that may go undetected otherwise, all while achieving low (or zero) false positives and low time investment.
+
+## 1.7. Conclusion
+
+## 1.8. Appendix A: OpenTitan
 The OpenTitan SoC homepage can be found [here](https://opentitan.org/), the documentation [here](https://docs.opentitan.org/), and the GitHub repository containing all source code [here](https://github.com/lowRISC/opentitan). OpenTitan is an open-source Root-of-Trust (RoT) SoC maintained by lowRISC and Google. It is the only open-source RoT currently available, making it an interesting case study for this assignment as it contains extensive security features and documentation. It implements various cryptographic hardware, such as the Advanced Encryption Standard (AES), HMAC, KMAC, and security countermeasures like access control to ensure the Confidentiality, Integrity, and Availability (CIA) of its functions. 
 
 ![OpenTitan Features](images/opentitan_features.png)
@@ -242,7 +309,7 @@ The OpenTitan project has well defined and documented threat models and counterm
 
 The adversaries they consider are (i) a bad actor with physical access to the device during fabrication or deployment, (ii) a malicious device owner, (iii) malicious users with remote access. 
 
-### 1.7.1. Architecture
+### 1.8.1. Architecture
 
 The OpenTitan SoC's architecture follows the standard Network-on-Chip (NoC) design paradigm, with various IP cores interconnected a high-speed communication protocol allowing them to communicate with one another. The processor is able to configure and use the pheripherals by writing and reading to memory-mapped IO registers.
 
@@ -255,7 +322,7 @@ The memories are integrated in the chip with configurable size and address. By d
 
 It also provides bebug functionality by way of the RISC-V debug specification 0.13.2 and the JTAG TAP specification.
 
-### 1.7.2. Security Features
+### 1.8.2. Security Features
 
 As a RoT, the OpenTitan SoC implements various security features. Outside of its secure cryptopgraphic functions, it also provides a secure boot flow that integrates multiple memory integrity checks, various access control measures such as lock bits for pheripheral configuration registers and memory regions, an integrity scheme integrated into the TL-UL crossbar, and security alerts that are triggered under defined conditions that suggest suspicious behaviour. 
 
@@ -287,7 +354,7 @@ to  feature that can overwrite the entire memory with pseudorandom data via a so
 
 The flash controller provides also optional memory scrambling and integrity bits. It also provides up to software-configurable 8 memory regions with configurable access policies.
 
-### 1.7.3. Collateral
+### 1.8.3. Collateral
 The OpenTitan SoC provides extensive collateral. Collateral in this context, refers to any additional information that describes the functionality of a design and its components. The collateral for this SoC consists of the documentation for all of its IP and contains its security features, interfaces, interactions with software, testplans, and block diagrams. Unique to this SoC are the hjson files that describe all of an IP's parameters, registers, security countermeasures, etc. This is extremely useful to obtain designer context behind the design. For example, from the AES hjson file, we can understand the function of parameter `SecMasking`, as shown in figure 4.
 
 ![AES SecMasking](images/aes_192.png)
