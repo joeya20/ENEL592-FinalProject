@@ -1,6 +1,7 @@
 # ENEL592-FinalProject
 
 ## Directory Structure:
-- report: final report
-- hls: HLS security files
-- opentitan: Buggy OpenTitan SoC
+hls: HLS Project files
+opentitan: Buggy OpenTitan SoC
+docs: OpenTitan Bug Documentation
+report: Project final report
