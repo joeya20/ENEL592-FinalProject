@@ -4,6 +4,7 @@
 - [1. ENEL 592 - Final Report](#1-enel-592---final-report)
   - [1.1. Table of Contents](#11-table-of-contents)
   - [1.2. Introduction](#12-introduction)
+  - [Hardware Security Verification](#hardware-security-verification)
   - [1.3. System-on-Chip Platform](#13-system-on-chip-platform)
   - [1.4. CWE Selection](#14-cwe-selection)
     - [1.4.1. CWE-1274](#141-cwe-1274)
@@ -45,6 +46,9 @@
 The aim of my ENEL 592 final project is to insert a set of security bugs into an System-on-Chip (SoC) design, and create associated testbenchs and firmware that demonstrate their implications. This is the culmination of my two previous assignments, where I surveyed hardware security verification and open-source SoC designs. The bugs should be as "realistic" as possible; they should resemble bugs found in-the-wild and be impactful.
 
 Next semester, I will build on this project and approach the problem from the other side of the coin -- bug detection and/or correction. The resulting SoC will also serve as a good benchmark for this future work.
+
+## Hardware Security Verification
+My survey of the cutting edge techniques under active research is given in the Appendix. I focused on three techniques, Static Analysis, Fuzzing, and Property Generation.
 
 ## 1.3. System-on-Chip Platform
 The SoC I used for bug injection is the [OpenTitan SoC](https://opentitan.org/), which I detailed in assignment 2. An excerpt of assignment 2 describing the OpenTitan SoC can be found in the [appendix A](#18-appendix-a-opentitan).
@@ -482,11 +486,7 @@ The flash controller provides also optional memory scrambling and integrity bits
 ### 1.8.3. Collateral
 The OpenTitan SoC provides extensive collateral. Collateral in this context, refers to any additional information that describes the functionality of a design and its components. The collateral for this SoC consists of the documentation for all of its IP and contains its security features, interfaces, interactions with software, testplans, and block diagrams. Unique to this SoC are the hjson files that describe all of an IP's parameters, registers, security countermeasures, etc. This is extremely useful to obtain designer context behind the design. For example, from the AES hjson file, we can understand the function of parameter `SecMasking`, as shown in figure 4.
 
-![AES SecMasking](images/aes_192.png)
+![AES SecMasking](images/aes_192.png)     
 <center>Figure 4: AES SecMasking .hjson snippet</center>
 
-
 Another aspect of collateral is the test environment provided. OpenTitan currently provides automated Dynamic Verification (DV) for all IP which perform simulate the IP and perform automated checks using a Golden Reference model. They also an FPV test suite using SystemVerilog Assertions which mainly verify the compliance to the TL-UL protocol. The SoC was setup locally with relative ease, thanks to the detailed instructions and reliable scripts, and the UVM tests were successful run using Verilator. 
-
-<!-- Abbreviations -->
-*[SoC]: System-on-Chip
